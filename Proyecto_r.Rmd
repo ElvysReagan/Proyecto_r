@@ -1,0 +1,104 @@
+```{r}
+# 1. CONOCIENDO LOS DATOS
+
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+
+yearly <- read_csv('deaths_handwashing.csv')
+yearly
+
+```
+
+```{r}
+# 2. EL ALARMANTE NUMERO DE MUERTES
+
+yearly <- mutate(yearly, proportion_deaths = deaths/births)
+  
+yearly
+
+```
+```{r}
+
+# 3. MUERTE EN LAS CLINICAS
+
+  ggplot(yearly, aes(x=year,y=proportion_deaths, color=clinic)) + geom_line()
+
+
+```
+```{r}
+# 4. COMIENZA EL LAVADO DE MANOS
+
+monthly <- read_csv('deaths_clinic_1.csv')
+monthly
+
+monthly <- mutate(monthly, proportion_deaths = deaths/births)
+
+head(monthly, n=10)
+
+```
+
+```{r}
+# 5. EL EFECTO DEL LAVADO DE MANOS
+
+  ggplot(monthly, aes(x=date,y=proportion_deaths)) + geom_line()
+
+
+  ggplot(monthly, aes(x=date,y=proportion_deaths)) + geom_line() + labs(title = "Grafico lineal",subtitle = "Proporción de muertes a lo largo del tiempo",x="fecha",y="Proporción de muertes")
+
+  death_by_year <- monthly
+  death_by_year
+
+  death_by_year <- mutate(death_by_year, year = as.numeric(format(date,"%Y"))) %>%
+  group_by(year) %>%
+  summarise(median_year=median(proportion_deaths))
+  
+  
+
+  ggplot(death_by_year, aes(x=year, y=median_year, fill=year)) + geom_col() + labs(title = "Grafico de barras",subtitle="media de proporciones de muertes por año",x="año",y="medias")
+  
+#  ggplot(death_by_year, aes(x=year, y=median_year)) + geom_col()
+  
+  
+```
+```{r}
+# 6. LOS RESULTADOS DEL LAVADO DE MANOS
+
+monthly
+monthly <- mutate(monthly, handwashing_started = ifelse(date>"1846-12-31",TRUE,FALSE))
+monthly
+
+ggplot(monthly, aes(x=date,y=proportion_deaths, color=handwashing_started)) + geom_line() + labs(title = "Proporción de muertes",subtitle="Antes y después de obligar el lavado de manos",x="Año",y="Proporción")
+
+
+```
+```{r}
+# 7. ¿MAS LAVADO DE MANOS, MENOS MUERTES?
+
+month_summary <- monthly %>%
+  select(date,proportion_deaths,handwashing_started) %>%
+  group_by(handwashing_started) %>%
+  summarise(mean_proportion_deaths=median(proportion_deaths))
+
+month_summary
+
+```
+
+```{r}
+# 8. ANALISIS ESTADISTICO DE LOS DATOS DE LAVADO DE MANOS
+
+prueba_t <- monthly
+
+t.test(prueba_t$proportion_deaths ~ prueba_t$handwashing_started,prueba_t)
+
+
+```
+```{r}
+# CON UN NIVEL DE CONFIANZA DE 95% EL INTERVALO QUEDA DE LA SIGUIENTE MANERA:
+
+    0.05290915  -   0.09747238
+  
+```
+
+
+
